@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -8,8 +9,8 @@ namespace Worker
 	public class WorkerController : MonoBehaviour
 	{
 		private static int _curId;
-
-		[SerializeField]private Transform[] _allObjects;
+	
+		[SerializeField]private List<Transform> _allObjects;
 		private Animator _anim;
 		private float _cold;
 		private GameObject _grass;
@@ -27,7 +28,7 @@ namespace Worker
 		public Text TemperatureText;
 		public Slider ThirstBar;
 		public Worker Workers;
-
+		public Transform WorkerPrefab;
 		private void Awake()
 		{
 			//worker Starting Settings
@@ -52,10 +53,10 @@ namespace Worker
 
 		private void Start()
 		{
-			if (_allObjects.Length == 0)
-				_allObjects = new Transform[_curId];
+			if (_allObjects.Count == 0)
+				_allObjects = new List<Transform>(_curId);
 		
-			_allObjects[_myId] = transform;
+			//_allObjects[_myId] = transform;
 
 			_resource = GameObject.FindWithTag("MainCamera").GetComponentInChildren<ResourceManager>();
 			_navAgent = GetComponentInChildren<NavMeshAgent>();
@@ -65,11 +66,18 @@ namespace Worker
 
 		private void Update()
 		{
+			if (Input.GetKeyDown(KeyCode.T))
+			{
+				var workerprefab = Instantiate(WorkerPrefab, Vector3.forward, Quaternion.Euler(0, 0, 0));
+				_allObjects.Add(workerprefab);
+				
+			}
+
 			if (Input.GetKeyDown(KeyCode.Q))
 				AutoWork(Workers.WorkerNumber, Workers.WorkerAutoHarvest);
 
 
-			//Workers.WorkerAllowMovement = !Workers.WorkerHarvesting;
+			Workers.WorkerAllowMovement = !Workers.WorkerHarvesting;
 
 			if (Workers.WorkerIsSelected)
 				IsSelected();
@@ -144,58 +152,6 @@ namespace Worker
 
 			TemperatureText.text = "Temperature " + Workers.WorkerTemperature + " F";
 			InsulationText.text = "Insulation " + Workers.WorkerInsulation;
-		}
-
-		private void Hypothermia()
-		{
-			//Debug.Log("Hypothermia");
-			Workers.WorkerHealth -= 2 * Time.deltaTime;
-			_cold = .5f;
-		}
-
-		private void Cold()
-		{
-			//Debug.Log("Cold");
-			_cold = .2f;
-		}
-
-		private void Hot()
-		{
-			//Debug.Log("Hot");
-		}
-
-		private void Hyperthermia()
-		{
-			//Debug.Log("Hyperthermia");
-			Workers.WorkerHealth -= 2 * Time.deltaTime;
-		}
-
-		private void Dead()
-		{
-			if (Workers.WorkerHealth <= 0)
-				print("Dead");
-		}
-
-		private void Fatigue()
-		{
-			if (Workers.WorkerStamina <= 0)
-				Workers.WorkerStamina = 0;
-		}
-
-		private void Dehydration()
-		{
-			Workers.WorkerHealth -= 2 * Time.deltaTime;
-
-			if (Workers.WorkerThirst <= 0)
-				Workers.WorkerThirst = 0;
-		}
-
-		private void Starvation()
-		{
-			Workers.WorkerHealth -= 2 * Time.deltaTime;
-
-			if (Workers.WorkerHunger <= 0)
-				Workers.WorkerHunger = 0;
 		}
 
 		private void Farmer()
@@ -320,8 +276,15 @@ namespace Worker
 
 		public void WorkButton()
 		{
-			var id = GetComponent<WorkerController>()._myId;
-			AutoWork(id, Workers.WorkerAutoHarvest);
+			print("button");
+			foreach (var id in GameObject.FindGameObjectsWithTag("Player"))
+			{
+				if (id.GetComponent<WorkerController>().Workers.WorkerIsSelected)
+				{
+					print("Shit");
+				}
+			}
+			//AutoWork(id, Workers.WorkerAutoHarvest);
 		}
 
 		public void AutoWork(int id, bool autoHarvest)
@@ -369,5 +332,56 @@ namespace Worker
 			_resource.FiberAmount += 10;
 			Destroy(_grass);
 		}
+
+		////Weather Health Effects////
+		private void Hypothermia()
+		{
+			Workers.WorkerHealth -= 2 * Time.deltaTime;
+			_cold = .5f;
+		}
+
+		private void Cold()
+		{
+			_cold = .2f;
+		}
+
+		private void Hot()
+		{
+		}
+
+		private void Hyperthermia()
+		{
+			Workers.WorkerHealth -= 2 * Time.deltaTime;
+		}
+
+		private void Dead()
+		{
+			if (Workers.WorkerHealth <= 0)
+				print("Dead");
+		}
+
+			////Worker Health Effects////
+		private void Fatigue()
+		{
+			if (Workers.WorkerStamina <= 0)
+				Workers.WorkerStamina = 0;
+		}
+
+		private void Dehydration()
+		{
+			Workers.WorkerHealth -= 2 * Time.deltaTime;
+
+			if (Workers.WorkerThirst <= 0)
+				Workers.WorkerThirst = 0;
+		}
+
+		private void Starvation()
+		{
+			Workers.WorkerHealth -= 2 * Time.deltaTime;
+
+			if (Workers.WorkerHunger <= 0)
+				Workers.WorkerHunger = 0;
+		}
+
 	}
 }

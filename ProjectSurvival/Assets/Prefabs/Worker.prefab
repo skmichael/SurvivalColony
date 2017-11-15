@@ -430,7 +430,7 @@ GameObject:
   - component: {fileID: 114621850750567678}
   m_Layer: 0
   m_Name: Worker
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -984,7 +984,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 6a6fbe9953327a641a43b7341fe00a9c, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
@@ -1000,6 +1000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a6768ab057dac4eb1ff5b8a8f4a8c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _allObjects: []
   CurrentJob: {fileID: 114426628671071188, guid: 3f25f9b2c7829fc4386c55d5e1574463,
     type: 2}
   HealthBar: {fileID: 114844748841267328, guid: 81869b508b3d0f84f8e607cc4ecb78b9,
@@ -1014,6 +1015,7 @@ MonoBehaviour:
     type: 2}
   ThirstBar: {fileID: 114044410105247626, guid: 81869b508b3d0f84f8e607cc4ecb78b9,
     type: 2}
+  WorkerPrefab: {fileID: 4981666962937628}
 --- !u!136 &136761678917021898
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -1109,7 +1111,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 2.5
+  m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
