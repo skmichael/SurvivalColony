@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -61,11 +62,22 @@ namespace Worker
 			_resource = GameObject.FindWithTag("MainCamera").GetComponentInChildren<ResourceManager>();
 			_navAgent = GetComponentInChildren<NavMeshAgent>();
 			_anim = GetComponentInChildren<Animator>();
+
+
+			//CurrentJob.text
+			//HealthBar.maxValue = 100f;
+			//HealthBar.minValue = 0f;
+			//HungerBar.
+			//Insulation
+			//StaminaBar
+			//Temperatur
+			//ThirstBar.
 		}
 
 
 		private void Update()
 		{
+
 			if (Input.GetKeyDown(KeyCode.T))
 			{
 				var workerprefab = Instantiate(WorkerPrefab, Vector3.forward, Quaternion.Euler(0, 0, 0));
@@ -80,10 +92,31 @@ namespace Worker
 			Workers.WorkerAllowMovement = !Workers.WorkerHarvesting;
 
 			if (Workers.WorkerIsSelected)
+			{ 
+			
 				IsSelected();
+			}
+
+			//Update Vitals Based On Whose Selected
+			foreach (var i in GameObject.FindGameObjectsWithTag("Player"))
+			{
+				var workers = i.GetComponent<WorkerController>();
+				if (workers.Workers.WorkerIsSelected)
+				{
+					CurrentJob.text = workers.Workers.WorkerRole;
+					HealthBar.value = workers.Workers.WorkerHealth;
+					HungerBar.value = workers.Workers.WorkerHunger;
+					InsulationText.text = "Insulation" + workers.Workers.WorkerInsulation;
+					StaminaBar.value = workers.Workers.WorkerStamina;
+					TemperatureText.text = "Temperature" + workers.Workers.WorkerTemperature;
+					ThirstBar.value = workers.Workers.WorkerThirst;
+				}
+			}
+
+
 
 			//Roll Selection
-			switch (Workers.WorkerRole)
+				switch (Workers.WorkerRole)
 			{
 				case "Lumberjack":
 					WorkJob("Tree");
@@ -98,6 +131,7 @@ namespace Worker
 					WorkJob("Farmer");
 					break;
 			}
+
 			#region workerController
 			//Hunger Controller
 			if (Workers.WorkerHunger <= 100)
@@ -106,33 +140,33 @@ namespace Worker
 			if (Workers.WorkerHunger <= 0)
 				Starvation();
 
-			HungerBar.minValue = 0;
-			HungerBar.maxValue = 100;
+			//HungerBar.minValue = 0;
+			//HungerBar.maxValue = 100;
 			//HungerBar.value = Workers.WorkerHunger;
 
 			//Thirst Controller
 			if (Workers.WorkerThirst <= 0)
 				Dehydration();
 
-			ThirstBar.minValue = 0;
-			ThirstBar.maxValue = 100;
-			ThirstBar.value = Workers.WorkerThirst;
+			//ThirstBar.minValue = 0;
+			//ThirstBar.maxValue = 100;
+			//ThirstBar.value = Workers.WorkerThirst;
 
 			//Stamina Controller
 			if (Workers.WorkerStamina <= 0)
 				Fatigue();
 
-			StaminaBar.minValue = 0;
-			StaminaBar.maxValue = 100;
-			StaminaBar.value = Workers.WorkerStamina;
+			//StaminaBar.minValue = 0;
+			//StaminaBar.maxValue = 100;
+			//StaminaBar.value = Workers.WorkerStamina;
 
 			//Health Controller
 			if (Workers.WorkerHealth <= 0)
 				Dead();
 
-			HealthBar.minValue = 0;
-			HealthBar.maxValue = 100;
-			HealthBar.value = Workers.WorkerHealth;
+			//HealthBar.minValue = 0;
+			//HealthBar.maxValue = 100;
+			//HealthBar.value = Workers.WorkerHealth;
 
 			//Temperauture Controller
 			if (Workers.WorkerTemperature <= 20 - Workers.WorkerInsulation)
@@ -149,8 +183,8 @@ namespace Worker
 			if (Workers.WorkerTemperature >= 100 + Workers.WorkerInsulation)
 				Hyperthermia();
 
-			TemperatureText.text = "Temperature " + Workers.WorkerTemperature + " F";
-			InsulationText.text = "Insulation " + Workers.WorkerInsulation;
+			//TemperatureText.text = "Temperature " + Workers.WorkerTemperature + " F";
+			//InsulationText.text = "Insulation " + Workers.WorkerInsulation;
 #endregion
 		}
 
@@ -196,6 +230,7 @@ namespace Worker
 					_navAgent.destination = hit.point;
 			}
 			_anim.SetBool("Walking", _navAgent.hasPath);
+
 		}
 
 		private void OnMouseDown()
