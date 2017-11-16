@@ -13,13 +13,13 @@ namespace Worker
 		[SerializeField]private List<Transform> _allObjects;
 		private Animator _anim;
 		private float _cold;
-		private GameObject _grass;
+		private GameObject _resourse;
 
 		private int _myId;
 		private NavMeshAgent _navAgent;
 		private ResourceManager _resource;
-		private GameObject _rock;
-		private GameObject _tree;
+		//private GameObject _rock;
+		//private GameObject _tree;
 		public Text CurrentJob;
 		public Slider HealthBar;
 		public Slider HungerBar;
@@ -29,6 +29,7 @@ namespace Worker
 		public Slider ThirstBar;
 		public Worker Workers;
 		public Transform WorkerPrefab;
+
 		private void Awake()
 		{
 			//worker Starting Settings
@@ -49,7 +50,6 @@ namespace Worker
 				WorkerThirst = 100
 			};
 		}
-
 
 		private void Start()
 		{
@@ -86,20 +86,19 @@ namespace Worker
 			switch (Workers.WorkerRole)
 			{
 				case "Lumberjack":
-					Lumberjack();
+					WorkJob("Tree");
 					break;
 				case "Miner":
-					Miner();
+					WorkJob("Rock");
 					break;
 				case "Farmer":
-					Farmer();
+					WorkJob("Grass");
 					break;
 				default:
-					Farmer();
+					WorkJob("Farmer");
 					break;
 			}
-
-
+			#region workerController
 			//Hunger Controller
 			if (Workers.WorkerHunger <= 100)
 				Workers.WorkerHunger -= (.1f + _cold) * Time.deltaTime;
@@ -152,9 +151,10 @@ namespace Worker
 
 			TemperatureText.text = "Temperature " + Workers.WorkerTemperature + " F";
 			InsulationText.text = "Insulation " + Workers.WorkerInsulation;
+#endregion
 		}
 
-		private void Farmer()
+		private void WorkJob(string job)
 		{
 			if (!Workers.WorkerAutoHarvest || !Workers.WorkerAllowMovement) return;
 			var minDistance = float.MaxValue;
@@ -162,7 +162,7 @@ namespace Worker
 			var i = 0;
 			while (i < hitColliders.Length)
 			{
-				if (hitColliders[i].tag.Equals("Grass"))
+				if (hitColliders[i].tag.Equals(job))
 				{
 					var possiblePosition = hitColliders[i].transform.position;
 
@@ -170,90 +170,19 @@ namespace Worker
 
 					if (currDistance < minDistance)
 					{
-						_grass = hitColliders[i].gameObject;
+						_resourse = hitColliders[i].gameObject;
 
 						minDistance = currDistance;
 						Debug.DrawLine(transform.position, hitColliders[i].transform.position, Color.red);
 						_navAgent.destination = hitColliders[i].transform.position;
 						if (currDistance <= 2 && !Workers.WorkerHarvesting)
-							HarvestGrass();
-					}
-				}
-				i++;
-			}
-		}
-
-		private void Miner()
-		{
-			if (!Workers.WorkerAutoHarvest || !Workers.WorkerAllowMovement) return;
-			var minDistance = float.MaxValue;
-			var hitColliders = Physics.OverlapSphere(transform.position, Workers.WorkerRaidus);
-			var i = 0;
-			while (i < hitColliders.Length)
-			{
-				if (hitColliders[i].tag.Equals("Rock"))
-				{
-					var possiblePosition = hitColliders[i].transform.position;
-
-					var currDistance = Vector3.Distance(transform.position, possiblePosition);
-
-					if (currDistance < minDistance)
-					{
-						_rock = hitColliders[i].gameObject;
-
-						minDistance = currDistance;
-						Debug.DrawLine(transform.position, hitColliders[i].transform.position, Color.red);
-						_navAgent.destination = hitColliders[i].transform.position;
-						if (currDistance <= 2 && !Workers.WorkerHarvesting)
-							HarvestRocks();
-					}
-				}
-				i++;
-			}
-		}
-
-		private void Lumberjack()
-		{
-			if (!Workers.WorkerAutoHarvest || !Workers.WorkerAllowMovement) return;
-			var minDistance = float.MaxValue;
-			var hitColliders = Physics.OverlapSphere(transform.position, Workers.WorkerRaidus);
-			var i = 0;
-			while (i < hitColliders.Length)
-			{
-				if (hitColliders[i].tag.Equals("Tree"))
-				{
-					var possiblePosition = hitColliders[i].transform.position;
-
-					var currDistance = Vector3.Distance(transform.position, possiblePosition);
-
-					if (currDistance < minDistance)
-					{
-						_tree = hitColliders[i].gameObject;
-
-						minDistance = currDistance;
-						Debug.DrawLine(transform.position, hitColliders[i].transform.position, Color.blue);
-						_navAgent.destination = hitColliders[i].transform.position;
-						if (currDistance <= 2.5f && !Workers.WorkerHarvesting)
 						{
-							Debug.Log("HArt");
-							StartCoroutine(IsHarvestingWood());
+							StartCoroutine(Harvesting(job));
 						}
 					}
 				}
 				i++;
 			}
-		}
-
-		private void HarvestGrass()
-		{
-			Workers.WorkerHarvesting = true;
-			StartCoroutine(IsHarvestingGrass());
-		}
-
-		private void HarvestRocks()
-		{
-			Workers.WorkerHarvesting = true;
-			StartCoroutine(IsHarvestingRock());
 		}
 
 		private void IsSelected()
@@ -279,12 +208,13 @@ namespace Worker
 			print("button");
 			foreach (var id in GameObject.FindGameObjectsWithTag("Player"))
 			{
-				if (id.GetComponent<WorkerController>().Workers.WorkerIsSelected)
+				var worker = id.GetComponent<WorkerController>().Workers;
+				if (worker.WorkerIsSelected)
 				{
-					print("Shit");
+					worker.WorkerAutoHarvest = !worker.WorkerAutoHarvest;
+					worker.WorkerAllowMovement = !worker.WorkerAllowMovement;
 				}
 			}
-			//AutoWork(id, Workers.WorkerAutoHarvest);
 		}
 
 		public void AutoWork(int id, bool autoHarvest)
@@ -303,37 +233,36 @@ namespace Worker
 		public void RoleSelect(string roll)
 		{
 			foreach (var workers in GameObject.FindGameObjectsWithTag("Player"))
-				if (workers.GetComponent<WorkerController>().Workers.WorkerIsSelected)
-					workers.GetComponent<WorkerController>().Workers.WorkerRole = roll;
+			{
+				var worker = workers.GetComponent<WorkerController>().Workers;
+				if (worker.WorkerIsSelected)
+					worker.WorkerRole = roll;
+			}
 		}
 
-
-		private IEnumerator IsHarvestingWood()
+		private IEnumerator Harvesting(string job)
 		{
 			Workers.WorkerHarvesting = true;
 			yield return new WaitForSeconds(10f);
 			Workers.WorkerHarvesting = false;
-			_resource.WoodAmount += 10;
-			Destroy(_tree);
+			switch (job)
+			{
+				case "Tree":
+					_resource.WoodAmount += 10;
+					break;
+				case "Rock":
+					_resource.StoneAmount += 10;
+					break;
+				case "Grass":
+					_resource.FiberAmount += 10;
+					break;
+				default:
+					break;
+			}
+			Destroy(_resourse);
 		}
 
-		private IEnumerator IsHarvestingRock()
-		{
-			yield return new WaitForSeconds(10f);
-			Workers.WorkerHarvesting = false;
-			_resource.StoneAmount += 10;
-			Destroy(_rock);
-		}
-
-		private IEnumerator IsHarvestingGrass()
-		{
-			yield return new WaitForSeconds(10f);
-			Workers.WorkerHarvesting = false;
-			_resource.FiberAmount += 10;
-			Destroy(_grass);
-		}
-
-		////Weather Health Effects////
+		//////Weather Health Effects//////
 		private void Hypothermia()
 		{
 			Workers.WorkerHealth -= 2 * Time.deltaTime;
@@ -360,7 +289,7 @@ namespace Worker
 				print("Dead");
 		}
 
-			////Worker Health Effects////
+		//////Worker Health Effects//////
 		private void Fatigue()
 		{
 			if (Workers.WorkerStamina <= 0)
