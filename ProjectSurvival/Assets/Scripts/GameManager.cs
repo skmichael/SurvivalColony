@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
 	public GameObject Rocks;
 	public GameObject Sun;
 	public GameObject Trees;
+	public Terrain Td;
+	public LayerMask Ground;
 
 	private void Start()
 	{
@@ -23,6 +25,8 @@ public class GameManager : MonoBehaviour
 
 	private void Update()
 	{
+		
+
 		//Spawn Harvestable Objects
 		if (_currentRockAmount < _maxRockAmount)
 			SpawnRock();
@@ -39,10 +43,16 @@ public class GameManager : MonoBehaviour
 	{
 		for (var i = _currentTreeAmount; i < _maxTreeAmount; i++)
 		{
-			var randomTreeSpawn = new Vector3(Random.Range(-500, 500), 0, Random.Range(-500, 500));
-			var tree = Instantiate(Trees, randomTreeSpawn, Quaternion.Euler(0, Random.Range(0, 360), 0));
-			tree.transform.parent = transform;
-			_currentTreeAmount += 1;
+			Vector3 randomTreeSpawn = new Vector3(Random.Range(-500, 500), 0, Random.Range(-500, 500));
+
+			RaycastHit hit;
+			Physics.Raycast(randomTreeSpawn, Vector3.down, out hit);
+			if(Td.SampleHeight(randomTreeSpawn) >= 200)
+			{
+				var tree = Instantiate(Trees, randomTreeSpawn, Quaternion.Euler(0, Random.Range(0, 360), 0));
+				tree.transform.parent = transform;
+				_currentTreeAmount += 1;
+			}
 		}
 	}
 
@@ -51,9 +61,15 @@ public class GameManager : MonoBehaviour
 		for (var i = _currentRockAmount; i < _maxRockAmount; i++)
 		{
 			var randomRockSpawn = new Vector3(Random.Range(-500, 500), 0.2f, Random.Range(-500, 500));
-			var rock = Instantiate(Rocks, randomRockSpawn, Quaternion.Euler(0, Random.Range(0, 360), 0));
-			rock.transform.parent = transform;
-			_currentRockAmount += 1;
+
+			RaycastHit hit;
+			Physics.Raycast(randomRockSpawn, Vector3.down, out hit);
+			if (Td.SampleHeight(randomRockSpawn) >= 200)
+			{
+				var rock = Instantiate(Rocks, randomRockSpawn, Quaternion.Euler(0, Random.Range(0, 360), 0));
+				rock.transform.parent = transform;
+				_currentRockAmount += 1;
+			}
 		}
 	}
 
@@ -62,9 +78,15 @@ public class GameManager : MonoBehaviour
 		for (var i = _currentGrassAmount; i < _maxGrassAmount; i++)
 		{
 			var randomGrassSpawn = new Vector3(Random.Range(-500, 500), 0f, Random.Range(-500, 500));
-			var grass = Instantiate(Grass, randomGrassSpawn, Quaternion.Euler(0, Random.Range(0, 360), 0));
-			grass.transform.parent = transform;
-			_currentGrassAmount += 1;
+
+			RaycastHit hit;
+			Physics.Raycast(randomGrassSpawn, Vector3.down, out hit);
+			if (Td.SampleHeight(randomGrassSpawn) >= 200)
+			{
+				var grass = Instantiate(Grass, randomGrassSpawn, Quaternion.Euler(0, Random.Range(0, 360), 0));
+				grass.transform.parent = transform;
+				_currentGrassAmount += 1;
+			}
 		}
 	}
 	
